@@ -1,0 +1,88 @@
+﻿@page "/"
+<h1>House Price Calculator</h1>
+
+<div class="alert alert-info" role="alert">
+    <h4 class="alert-heading">🛈</h4>
+    <p>This tool is designed to help roughly calculate buying a house in Scotland, taking into account both LBTT and ADS.</p>
+</div>
+
+<label for="purchasePrice">Purchase Price:</label>
+<input id="purchasePrice" @bind="purchasePrice" type="number" />
+<label for="deposit">Deposit:</label>
+<input id="deposit" @bind="deposit" type="number" />
+<br />
+<label for="interestRate">Mortage rate:</label>
+<input id="interestRate" @bind="interestRate" type="number" />
+<label for="years">Mortage years:</label>
+<input id="years" @bind="years" type="number" />
+<br />
+<button class="btn btn-primary" @onclick="Calculate">Calculate</button>
+
+@if (total != 0)
+{
+    <hr />
+    <p>Purchase price: £@purchasePrice</p>
+    <p>Deposit: £@deposit</p>
+    <p>LBTT: £@lbtt</p>
+    <p>ADS: £@ads</p>
+    <br />
+    <p>Total purchase price: £@total</p>
+    <p>Mortgage required: £@(purchasePrice - deposit)</p>
+    <p>Mortgage payments: £@string.Format("{0:0.00}", MonthlyMortgagePayments((purchasePrice - deposit), interestRate, years)) per month</p>
+    <p>Cash required (with ADS): £@(lbtt + ads + deposit) (£@deposit + £@(lbtt + ads))</p>
+    <p>Cash required (no ADS): £@(lbtt + deposit) (£@deposit + £@(lbtt))</p>
+}
+
+@code {
+    private int purchasePrice;
+    private int deposit;
+    private double interestRate = 6;
+    private int years = 30;
+
+    private int lbtt;
+    private int ads;
+    private int total;
+
+    private void Calculate()
+    {
+        lbtt = 0;
+        ads = 0;
+        total = 0;
+
+        if (purchasePrice <= 40000)
+        {
+            total = purchasePrice;
+            return;
+        }
+
+        if (purchasePrice > 145000)
+        {
+            lbtt += (Math.Min(purchasePrice, 250000) - 145000) / 100 * 2;
+        }
+        if (purchasePrice > 250000)
+        {
+            lbtt += (Math.Min(purchasePrice, 325000) - 250000) / 100 * 5;
+        }
+        if (purchasePrice > 325000)
+        {
+            lbtt += (Math.Min(purchasePrice, 750000) - 325000) / 100 * 10;
+        }
+        if (purchasePrice > 750000)
+        {
+            lbtt += (purchasePrice - 750000) / 100 * 12;
+        }
+
+        ads = purchasePrice / 100 * 6;
+
+        total = purchasePrice + lbtt + ads;
+    }
+
+    private double MonthlyMortgagePayments(int amount, double interestRate, int years)
+    {
+        var p = amount;
+        var i = interestRate / 100 / 12;
+        var n = years * 12;
+
+        return p * (i * Math.Pow(1 + i, n)) / ((Math.Pow(1 + i, n) - 1));
+    }
+}
