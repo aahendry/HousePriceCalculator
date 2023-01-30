@@ -20,7 +20,7 @@ jobs:
         
     # publishes Blazor project to the release-folder
     - name: Publish .NET Core Project
-      run: dotnet publish HousePriceCalculator\HousePriceCalculator.csproj -c Release -o release --nologo
+      run: dotnet publish HousePriceCalculator/HousePriceCalculator.csproj -c Release -o release --nologo
       
     # publishes to gh-pages branch
     - name: Commit wwwroot to GitHub Pages
